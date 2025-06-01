@@ -1,0 +1,150 @@
+﻿@page "/"
+
+
+
+<h3>Árbol B basado en orden</h3>
+
+<p>Orden (d): <input type="number" @bind="orden" min="1" />
+    <button @onclick="CrearArbol">Crear Árbol</button>
+</p>
+
+@if (arbol != null)
+{
+    <p>Clave: <input type="number" @bind="clave" />
+        <button @onclick="Insertar">Insertar clave</button>
+    </p>
+
+    <p>Buscar clave: <input type="number" @bind="claveBusqueda" />
+        <button @onclick="BuscarClave">Buscar</button>
+    </p>
+    <p style="font-weight:bold; color:@(resultadoBusqueda.Contains("encontrada") ? "green" : "red")">@resultadoBusqueda</p>
+
+    <p>Clave a eliminar: <input type="number" @bind="claveEliminar" />
+        <button @onclick="EliminarClave">Eliminar clave</button>
+    </p>
+
+
+    <h4>Visualización del árbol</h4>
+    <div class="arbol-wrapper">
+        @MostrarNodo(arbol.Raiz)
+    </div>
+}
+
+@code {
+    int orden = 2;
+    int clave;
+    ArbolB arbol;
+
+    int claveBusqueda;
+    string resultadoBusqueda = "";
+
+
+    void CrearArbol()
+    {
+        arbol = new ArbolB(orden);
+    }
+
+    void Insertar()
+    {
+        arbol.Insertar(clave);
+        clave = 0;
+    }
+
+    RenderFragment MostrarNodo(NodoB nodo) => builder =>
+    {
+        if (nodo == null) return;
+
+        int seq = 0;
+        builder.OpenElement(seq++, "div");
+        builder.AddAttribute(seq++, "class", "nodo-contenedor");
+
+        builder.OpenElement(seq++, "div");
+        builder.AddAttribute(seq++, "class", "nodo");
+        for (int i = 0; i < nodo.Cuenta; i++)
+        {
+            builder.OpenElement(seq++, "span");
+            builder.AddContent(seq++, nodo.Claves[i]);
+            builder.CloseElement();
+        }
+        builder.CloseElement();
+
+        if (!nodo.EsHoja)
+        {
+            builder.OpenElement(seq++, "div");
+            builder.AddAttribute(seq++, "class", "hijos");
+            for (int i = 0; i <= nodo.Cuenta; i++)
+            {
+                builder.AddContent(seq++, MostrarNodo(nodo.Hijos[i]));
+            }
+            builder.CloseElement();
+        }
+
+        builder.CloseElement();
+    };
+
+       void BuscarClave()
+    {
+        if (arbol != null)
+        {
+            bool encontrado = arbol.Buscar(claveBusqueda);
+            resultadoBusqueda = encontrado ? $"Clave {claveBusqueda} encontrada." : $"Clave {claveBusqueda} no encontrada.";
+        }
+        else
+        {
+            resultadoBusqueda = "Primero debes crear el árbol.";
+        }
+    }
+    int claveEliminar;
+    void EliminarClave()
+    {
+        arbol.Eliminar(claveEliminar);
+        claveEliminar = 0;
+    }
+
+
+
+}
+
+<style>
+    .arbol-wrapper {
+        display: flex;
+        justify-content: center;
+        margin-top: 20px;
+    }
+
+    .nodo-contenedor {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        margin: 10px;
+    }
+
+    .nodo {
+        border: 2px solid #3a86ff;
+        border-radius: 8px;
+        padding: 8px 16px;
+        background-color: #caf0f8;
+        font-weight: bold;
+        min-width: 40px;
+        text-align: center;
+        display: flex;
+        gap: 6px;
+        justify-content: center;
+    }
+
+        .nodo span {
+            padding: 0 6px;
+            border-right: 1px solid #023047;
+        }
+
+            .nodo span:last-child {
+                border-right: none;
+            }
+
+    .hijos {
+        display: flex;
+        justify-content: center;
+        margin-top: 20px;
+        gap: 20px;
+    }
+</style>
